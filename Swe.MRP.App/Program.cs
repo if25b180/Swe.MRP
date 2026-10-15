@@ -8,7 +8,7 @@ namespace Swe.MRP.App
         {
             string localhost = "http://localhost:8080/";
             MRPServer server = new MRPServer(localhost);
-            server.start();
+            server.Start();
             
             DotNetEnv.Env.TraversePath().Load();
             string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
@@ -17,8 +17,8 @@ namespace Swe.MRP.App
                 Console.WriteLine("Konnte nicht zur Datenbank verbinden! Stelle sicher, dass 'POSTGRES_CONNECTION_STRING' in der .env-File gesetzt ist!");
                 return;
             }
-
-            server.connectDatabase(connectionString);
+            
+            server.ConnectDatabase(connectionString);
         }
     }
 }

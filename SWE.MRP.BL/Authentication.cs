@@ -4,12 +4,12 @@ namespace SWE.MRP.BL;
 
 public class Authentication
 {
-    public void register()
+    public void Register()
     {
         
     }
 
-    public void login()
+    public void Login()
     {
         
     }

@@ -18,7 +18,7 @@ public class MRPServer
         _listener = new HttpListener();
     }
 
-    public void start()
+    public void Start()
     {
         _listener.Prefixes.Add(_httpUrl);
         _listener.Start();
@@ -40,7 +40,7 @@ public class MRPServer
         }
     }
 
-    public void connectDatabase(string connectionString)
+    public void ConnectDatabase(string connectionString)
     {
         _database = new Database(connectionString);
     }
