@@ -9,5 +9,4 @@
   <ItemGroup>
     <ProjectReference Include="../Swe.MRP.DL/Swe.MRP.DL.csproj" />
   </ItemGroup>
-
 </Project>
