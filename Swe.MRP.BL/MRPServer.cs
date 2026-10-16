@@ -1,9 +1,8 @@
 ﻿using System.Net;
 using System.Text;
 using Swe.MRP.DL;
-using static System.Net.WebRequestMethods;
 
-namespace SWE.MRP.BL;
+namespace Swe.MRP.BL;
 
 public class MRPServer(string httpUrl)
 {
@@ -20,9 +19,10 @@ public class MRPServer(string httpUrl)
         _serverTask = ServerLoop();
     }
 
-    public void ConnectDatabase(string connectionString)
+    public void InitDatabase(string connectionString)
     {
         _database = new Database(connectionString);
+        _database.ApplyMissingSchemas();
     }
 
     public void WaitForTermination()
@@ -45,8 +45,11 @@ public class MRPServer(string httpUrl)
     {
         HttpListenerResponse response = context.Response;
 
-        string responseString = rnd.Next(1, 101).ToString();
-        byte[] responseBuffer = Encoding.UTF8.GetBytes(responseString);
+        string responseString = 
+            "<p>Deine Glückszahl ist: " + rnd.Next(1, 101).ToString() + "</p>"
+            + "<style>*{background-color:black; color:white;}</style>"
+        ;
+        byte[] responseBuffer = Encoding.Latin1.GetBytes(responseString); // Latin1 for german
 
         response.ContentLength64 = responseBuffer.Length;
         response.ContentType = "text/html";

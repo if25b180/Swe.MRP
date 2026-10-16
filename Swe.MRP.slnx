@@ -1,6 +1,6 @@
 <Solution>
   <Project Path="Swe.MRP.App/Swe.MRP.App.csproj"/>
-  <Project Path="SWE.MRP.BL/SWE.MRP.BL.csproj"/>
+  <Project Path="Swe.MRP.BL/Swe.MRP.BL.csproj"/>
   <Project Path="Swe.MRP.DL/Swe.MRP.DL.csproj"/>
   <Folder Name="/Solution Items/">
     <File Path=".env"/>

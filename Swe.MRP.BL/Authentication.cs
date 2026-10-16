@@ -1,6 +1,6 @@
 using System;
 
-namespace SWE.MRP.BL;
+namespace Swe.MRP.BL;
 
 public class Authentication
 {

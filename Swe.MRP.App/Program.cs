@@ -1,4 +1,4 @@
-﻿using SWE.MRP.BL;
+﻿using Swe.MRP.BL;
 
 namespace Swe.MRP.App;
 
@@ -17,7 +17,7 @@ internal static class Program
             Console.WriteLine("Konnte nicht zur Datenbank verbinden! Stelle sicher, dass 'POSTGRES_CONNECTION_STRING' in der .env-File gesetzt ist!");
             return;
         }
-        server.ConnectDatabase(connectionString);
+        server.InitDatabase(connectionString);
         
         server.WaitForTermination();
         Console.WriteLine("Server terminiert.");
