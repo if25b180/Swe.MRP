@@ -2,16 +2,10 @@
 
 using Npgsql;
 
-public class Database
+public class Database(string connectionString)
 {
-    private readonly NpgsqlConnection _connection;
-    private readonly string _schemasFolder;
-
-    public Database(string connectionString)
-    {
-        _connection = new NpgsqlConnection(connectionString);
-        _schemasFolder = Path.Combine(AppContext.BaseDirectory, "Schemas");
-    }
+    private readonly NpgsqlConnection _connection = new(connectionString);
+    private readonly string _schemasFolder = Path.Combine(AppContext.BaseDirectory, "Schemas");
 
     private void EnsureOpen()
     {

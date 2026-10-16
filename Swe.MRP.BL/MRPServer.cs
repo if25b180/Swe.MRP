@@ -6,8 +6,8 @@ namespace Swe.MRP.BL;
 
 public class MRPServer(string httpUrl)
 {
-    private HttpListener _listener { get; } = new HttpListener();
-    private string HttpUrl { get; } = httpUrl;
+    private readonly HttpListener _listener = new();
+    private readonly string HttpUrl = httpUrl;
     private Database? _database;
     private Task? _serverTask;
 
