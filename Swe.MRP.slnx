@@ -5,5 +5,6 @@
   <Folder Name="/Solution Items/">
     <File Path=".env"/>
     <File Path=".gitignore"/>
+    <File Path="spec/openapi-mrp.yaml"/>
   </Folder>
 </Solution>

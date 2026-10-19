@@ -1,15 +1,18 @@
 ﻿using System.Net;
 using System.Text;
+using Swe.MRP.BL.Api;
 using Swe.MRP.DL;
 
 namespace Swe.MRP.BL;
 
-public class MRPServer(string httpUrl)
+public class MRPServer(string httpUrl, EndpointRegistrar endpointRegistrar)
 {
     private readonly HttpListener _listener = new();
     private readonly string HttpUrl = httpUrl;
     private Database? _database;
+    private Authentication? _authentication;
     private Task? _serverTask;
+    private readonly EndpointRegistrar _endpointRegistrar = endpointRegistrar;
 
     public void Start()
     {
@@ -23,6 +26,8 @@ public class MRPServer(string httpUrl)
     {
         _database = new Database(connectionString);
         _database.ApplyMissingSchemas();
+
+        _authentication = new Authentication(_database);
     }
 
     public void WaitForTermination()
@@ -36,18 +41,27 @@ public class MRPServer(string httpUrl)
 
         while (_listener.IsListening)
         {
-            var context = await _listener.GetContextAsync();
+            HttpListenerContext context = await _listener.GetContextAsync();
             await HandleResponse(context, rnd);
         }
     }
 
-    private static async Task HandleResponse(HttpListenerContext context, Random rnd)
+    private async Task HandleResponse(HttpListenerContext context, Random rnd)
     {
         HttpListenerResponse response = context.Response;
+        HttpListenerRequest request = context.Request;
 
-        string responseString = 
-            "<p>Deine Glückszahl ist: " + rnd.Next(1, 101).ToString() + "</p>"
-            + "<style>*{background-color:black; color:white;}</style>"
+        string apiRequest = context.Request.Url.LocalPath;
+        _endpointRegistrar.Handle(apiRequest);
+
+        string responseString = $@"
+            <p>Deine Glückszahl ist: {rnd.Next(1, 101)}</p>
+            <style>
+                *{{
+                    background-color:black; color:white;
+                }}
+            </style>
+        "
         ;
         byte[] responseBuffer = Encoding.Latin1.GetBytes(responseString); // Latin1 for german
 

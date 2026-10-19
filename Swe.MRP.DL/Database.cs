@@ -13,18 +13,23 @@ public class Database(string connectionString)
             _connection.Open();
     }
 
+    public NpgsqlCommand Command(string sqlString, NpgsqlTransaction? _transaction = null)
+    {
+        return new NpgsqlCommand(sqlString, _connection, _transaction);
+    }
+
     private List<string> GetAppliedSchemas()
     {
         EnsureOpen();
 
-        NpgsqlCommand schemasRan = new("SELECT to_regclass('public.applied_schemas') IS NOT NULL", _connection);
+        NpgsqlCommand schemasRan = Command("SELECT to_regclass('public.applied_schemas') IS NOT NULL");
         if (!(bool) schemasRan.ExecuteScalar()!)
         {
             return [];
         }
 
         List<string> appliedSchemas = [];
-        NpgsqlCommand schemasFilenames = new("SELECT filename from applied_schemas", _connection);
+        NpgsqlCommand schemasFilenames = Command("SELECT filename from applied_schemas");
         NpgsqlDataReader reader = schemasFilenames.ExecuteReader();
         while (reader.Read())
         {
@@ -38,7 +43,7 @@ public class Database(string connectionString)
     {
         EnsureOpen();
 
-        string?[] schemaFiles = [.. Directory.GetFiles(_schemasFolder, "*.sql", SearchOption.AllDirectories)];
+        string?[] schemaFiles = Directory.GetFiles(_schemasFolder, "*.sql", SearchOption.AllDirectories);
         return schemaFiles;
     }
 
@@ -46,13 +51,13 @@ public class Database(string connectionString)
     {
         EnsureOpen();
 
-        NpgsqlCommand createAppliedSchemasLog = new(
+        NpgsqlCommand createAppliedSchemasLog = Command(
             @"
             CREATE TABLE IF NOT EXISTS applied_schemas(
                 filename text PRIMARY KEY
             )
             "
-        , _connection);
+        );
         createAppliedSchemasLog.ExecuteNonQuery();
 
         List<string> appliedSchemas = GetAppliedSchemas();
@@ -74,10 +79,10 @@ public class Database(string connectionString)
                     continue;
                 }
 
-                NpgsqlCommand schemaRun = new(File.ReadAllText(path), _connection, transaction);
+                NpgsqlCommand schemaRun = Command(File.ReadAllText(path), transaction);
                 schemaRun.ExecuteNonQuery();
 
-                NpgsqlCommand logSchema = new("INSERT INTO applied_schemas (filename) VALUES (@f)", _connection, transaction);
+                NpgsqlCommand logSchema = Command("INSERT INTO applied_schemas (filename) VALUES (@f)", transaction);
                 logSchema.Parameters.AddWithValue("f", file);
                 logSchema.ExecuteNonQuery();
 
