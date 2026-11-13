@@ -4,6 +4,7 @@ namespace Swe.MRP.BL.Abstractions.Repository;
 
 public interface IUserRepository
 {
-    void Add(User user);
+    void Register(User user);
+    string? Login(User user);
     void Remove(int id);
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Swe.MRP.BL;
+using Swe.MRP.BL.Abstractions.Api;
 using Swe.MRP.BL.Abstractions.Repository;
 using Swe.MRP.BL.Api;
 using Swe.MRP.BL.Api.Endpoints;
@@ -42,9 +43,11 @@ internal static class Program
         ServiceCollection services = new();
 
         services.AddSingleton<Database>(_ => new(Env("NPGSQL_CONNECTION_STRING")));
-        services.AddSingleton<EndpointRegistrar>(provider => new(provider));
+        services.AddSingleton<EndpointHandler>();
         services.AddSingleton<Authentication>();
-        services.AddSingleton<RegisterEndpoint>();
+
+        services.AddSingleton<IApiEndpoint, RegisterEndpoint>();
+        services.AddSingleton<IApiEndpoint, LoginEndpoint>();
 
         services.AddScoped<IUserRepository, AdoNetUserRepository>();
 
@@ -61,6 +64,9 @@ internal static class Program
         }
 
         ServiceProvider provider = RegisterServices();
+
+        Database database = provider.GetRequiredService<Database>();
+        database.ApplyMissingSchemas();
 
         MRPServer server = StartServer(provider);
         server.WaitForTermination();

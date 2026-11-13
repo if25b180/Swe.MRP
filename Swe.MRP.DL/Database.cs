@@ -73,15 +73,8 @@ public class Database(string connectionString)
 
             try 
             {
-                if (file == null || path == null)
-                {
-                    continue;
-                }
-
-                if (appliedSchemas.Contains(file))
-                {
-                    continue;
-                }
+                if (file == null || path == null) continue;
+                if (appliedSchemas.Contains(file)) continue;
 
                 NpgsqlCommand schemaRun = Command(File.ReadAllText(path), transaction);
                 schemaRun.ExecuteNonQuery();
@@ -91,6 +84,7 @@ public class Database(string connectionString)
                 logSchema.ExecuteNonQuery();
 
                 transaction.Commit();
+                Console.WriteLine($"Schema {file} wurde ausgeführt.");
             } catch
             {
                 transaction.Rollback();

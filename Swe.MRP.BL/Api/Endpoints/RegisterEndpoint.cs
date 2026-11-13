@@ -5,12 +5,14 @@ using Swe.MRP.BL.Model;
 
 namespace Swe.MRP.BL.Api.Endpoints;
 
-public class RegisterEndpoint : IApiEndpoint
+public class RegisterEndpoint(IServiceProvider services) : IApiEndpoint
 {
+    public IServiceProvider Services => services;
+
     int IApiEndpoint.Version => 1;
     string IApiEndpoint.EndpointName => "/users/register";
 
-    public void Behaviour(IServiceProvider services, Dictionary<string, string> args)
+    public void Behaviour(Dictionary<string, string> args)
     {
         Console.WriteLine("RegisterEndpoint.Behaviour() wurde aufgerufen.");
 
@@ -30,6 +32,6 @@ public class RegisterEndpoint : IApiEndpoint
         };
 
         IUserRepository userRepo = services.GetRequiredService<IUserRepository>();
-        userRepo.Add(user);
+        userRepo.Register(user);
     }
 }

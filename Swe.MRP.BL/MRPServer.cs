@@ -11,7 +11,7 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
     private readonly HttpListener _listener = new();
     private readonly string HttpUrl = httpUrl;
     private Task? _serverTask;
-    private readonly EndpointRegistrar _endpointRegistrar = serviceProvider.GetRequiredService<EndpointRegistrar>();
+    private readonly EndpointHandler _endpointHandler = serviceProvider.GetRequiredService<EndpointHandler>();
 
     public void Start()
     {
@@ -67,7 +67,7 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
         }
             
         string apiRequest = request.Url!.LocalPath;
-        _endpointRegistrar.Handle(apiRequest, parameters);
+        _endpointHandler.Call(apiRequest, parameters);
 
         string responseString = "";
         foreach (KeyValuePair<string, string> entry in parameters)
