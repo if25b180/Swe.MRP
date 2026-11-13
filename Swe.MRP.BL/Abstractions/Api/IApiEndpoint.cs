@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Swe.MRP.BL.Api;
+namespace Swe.MRP.BL.Abstractions.Api;
 
 public interface IApiEndpoint
 {

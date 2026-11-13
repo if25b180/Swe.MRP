@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Swe.MRP.BL.Api;
-using Swe.MRP.DL;
 
 namespace Swe.MRP.BL;
 
@@ -11,8 +10,6 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
 {
     private readonly HttpListener _listener = new();
     private readonly string HttpUrl = httpUrl;
-    private Database? _database;
-    private Authentication? _authentication;
     private Task? _serverTask;
     private readonly EndpointRegistrar _endpointRegistrar = serviceProvider.GetRequiredService<EndpointRegistrar>();
 
@@ -22,14 +19,6 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
         _listener.Start();
         Console.WriteLine($"Server gestartet auf: {HttpUrl}");
         _serverTask = ServerLoop();
-    }
-
-    public void InitDatabase(string connectionString)
-    {
-        _database = new Database(connectionString);
-        _database.ApplyMissingSchemas();
-
-        _authentication = new Authentication(_database);
     }
 
     public void WaitForTermination()

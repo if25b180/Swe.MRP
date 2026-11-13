@@ -12,5 +12,8 @@
   <ItemGroup>
     <None Update="Schemas/**/*.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Swe.MRP.BL\Swe.MRP.BL.csproj" />
+  </ItemGroup>
 
 </Project>

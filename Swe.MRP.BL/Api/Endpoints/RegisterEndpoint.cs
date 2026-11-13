@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Swe.MRP.BL.Services;
+using Swe.MRP.BL.Abstractions.Api;
+using Swe.MRP.BL.Abstractions.Repository;
+using Swe.MRP.BL.Model;
 
 namespace Swe.MRP.BL.Api.Endpoints;
 
@@ -21,7 +23,13 @@ public class RegisterEndpoint : IApiEndpoint
             return;
         }
 
-        AuthenticationService authentication = services.GetRequiredService<AuthenticationService>();
-        authentication.Register(username, password);
+        User user = new()
+        {
+            Name = username,
+            Password = password
+        };
+
+        IUserRepository userRepo = services.GetRequiredService<IUserRepository>();
+        userRepo.Add(user);
     }
 }

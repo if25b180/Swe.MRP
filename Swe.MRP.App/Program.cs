@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Swe.MRP.BL;
+using Swe.MRP.BL.Abstractions.Repository;
 using Swe.MRP.BL.Api;
 using Swe.MRP.BL.Api.Endpoints;
-using Swe.MRP.BL.Services;
 using Swe.MRP.DL;
+using Swe.MRP.DL.Repository;
 
 namespace Swe.MRP.App;
 
@@ -27,6 +28,30 @@ internal static class Program
         return true;
     }
 
+    static MRPServer StartServer(ServiceProvider provider)
+    {
+        const string localhost = "http://localhost:8080/";
+        MRPServer server = new(localhost, provider);
+        server.Start();
+
+        return server;
+    }
+
+    static ServiceProvider RegisterServices()
+    {
+        ServiceCollection services = new();
+
+        services.AddSingleton<Database>(_ => new(Env("NPGSQL_CONNECTION_STRING")));
+        services.AddSingleton<EndpointRegistrar>(provider => new(provider));
+        services.AddSingleton<Authentication>();
+        services.AddSingleton<RegisterEndpoint>();
+
+        services.AddScoped<IUserRepository, AdoNetUserRepository>();
+
+        ServiceProvider provider = services.BuildServiceProvider();
+        return provider;
+    }
+
     static async Task Main()
     {
         if (!ReadEnvironment())
@@ -35,25 +60,11 @@ internal static class Program
             Environment.Exit(-1);
         }
 
-        ServiceCollection services = new();
+        ServiceProvider provider = RegisterServices();
 
-        Database database = new(Env("NPGSQL_CONNECTION_STRING"));
-        services.AddSingleton<Database>(_ => database);
-
-        services.AddSingleton<Authentication>();
-        services.AddSingleton<AuthenticationService>();
-        services.AddSingleton<RegisterEndpoint>();
-
-        services.AddSingleton<EndpointRegistrar>
-            (provider => new EndpointRegistrar(provider));
-
-        ServiceProvider provider = services.BuildServiceProvider();
-
-        const string localhost = "http://localhost:8080/";
-        MRPServer server = new(localhost, provider);
-        server.Start();
-        
+        MRPServer server = StartServer(provider);
         server.WaitForTermination();
+        
         Console.WriteLine("Server terminiert.");
     }
 }
