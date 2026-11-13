@@ -4,10 +4,14 @@ using Npgsql;
 
 public class Database(string connectionString)
 {
+    /* TODO: open connection per command, rather than one singular connection
+    * that is kept alive throghout; otherwise we might get some concurrency errors
+    */
+
     private readonly NpgsqlConnection _connection = new(connectionString);
     private readonly string _schemasFolder = Path.Combine(AppContext.BaseDirectory, "Schemas");
 
-    private void EnsureOpen()
+    public void EnsureOpen()
     {
         if (_connection.State != System.Data.ConnectionState.Open)
             _connection.Open();

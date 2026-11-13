@@ -8,18 +8,12 @@ public class RegisterEndpoint : IApiEndpoint
     int IApiEndpoint.Version => 1;
     string IApiEndpoint.EndpointName => "/users/register";
 
-    public void Behaviour(ServiceProvider services, Dictionary<string, string> args)
+    public void Behaviour(IServiceProvider services, Dictionary<string, string> args)
     {
         Console.WriteLine("RegisterEndpoint.Behaviour() wurde aufgerufen.");
 
-        /* TODO: implement args parsing
-        * args parsing doesn't work right now, so we'll comment it out for now,
-        * avoids an exception as of now
-
         args.TryGetValue("username", out string? username);
         args.TryGetValue("password", out string? password);
-
-        AuthenticationService authentication = services.GetRequiredService<AuthenticationService>();
         
         if (username == null || password == null)
         {
@@ -27,7 +21,7 @@ public class RegisterEndpoint : IApiEndpoint
             return;
         }
 
+        AuthenticationService authentication = services.GetRequiredService<AuthenticationService>();
         authentication.Register(username, password);
-        */
     }
 }

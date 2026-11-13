@@ -6,5 +6,5 @@ public interface IApiEndpoint
 {
     int Version { get; }
     string EndpointName { get; }
-    void Behaviour(ServiceProvider services, Dictionary<string, string> args);
+    void Behaviour(IServiceProvider services, Dictionary<string, string> args);
 }

@@ -6,9 +6,9 @@ namespace Swe.MRP.BL.Api;
 public class EndpointRegistrar
 {
     private readonly Dictionary<string, IApiEndpoint> _endpoints = [];
-    private readonly ServiceProvider _serviceProvider;
+    private readonly IServiceProvider _serviceProvider;
     
-    public EndpointRegistrar(ServiceProvider serviceProvider)
+    public EndpointRegistrar(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
 
@@ -25,26 +25,22 @@ public class EndpointRegistrar
         }
     }
 
-    public void Handle(string endpointPath)
+    public void Handle(string endpointPath, Dictionary<string, string> args)
     {
         Console.WriteLine(endpointPath);
 
-        // TODO: implement args parsing
-        Dictionary<string, string> args = [];
-
-        int paramIndex = endpointPath.IndexOf("api/");
-        if (paramIndex == -1)
+        if (!endpointPath.Contains("api/"))
         {
             // No particular api endpoint was called
             return;
         }
 
-        if (!_endpoints.ContainsKey(endpointPath))
+        if (!_endpoints.TryGetValue(endpointPath, out IApiEndpoint? endpoint))
         {
             Console.WriteLine($"Endpoint {endpointPath} existiert nicht");
             return;
         }
 
-        _endpoints[endpointPath].Behaviour(_serviceProvider, args);
+        endpoint?.Behaviour(_serviceProvider, args);
     }
 }
