@@ -2,8 +2,7 @@
 using Swe.MRP.BL;
 using Swe.MRP.BL.Abstractions.Api;
 using Swe.MRP.BL.Abstractions.Repository;
-using Swe.MRP.BL.Api;
-using Swe.MRP.BL.Api.Endpoints;
+using Swe.MRP.BL.Endpoints;
 using Swe.MRP.DL;
 using Swe.MRP.DL.Repository;
 
