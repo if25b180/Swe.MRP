@@ -44,7 +44,6 @@ internal static class Program
 
         services.AddSingleton<Database>(_ => new(Env("NPGSQL_CONNECTION_STRING")));
         services.AddSingleton<EndpointHandler>();
-        services.AddSingleton<Authentication>();
 
         services.AddSingleton<IApiEndpoint, RegisterEndpoint>();
         services.AddSingleton<IApiEndpoint, LoginEndpoint>();

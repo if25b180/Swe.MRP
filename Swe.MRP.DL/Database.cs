@@ -4,36 +4,22 @@ using Npgsql;
 
 public class Database(string connectionString)
 {
-    /* TODO: open connection per command, rather than one singular connection
-    * that is kept alive throghout; otherwise we might get some concurrency errors
-    */
-
-    private readonly NpgsqlConnection _connection = new(connectionString);
     private readonly string _schemasFolder = Path.Combine(AppContext.BaseDirectory, "Schemas");
-
-    public void EnsureOpen()
-    {
-        if (_connection.State != System.Data.ConnectionState.Open)
-            _connection.Open();
-    }
-
-    public NpgsqlCommand Command(string sqlString, NpgsqlTransaction? _transaction = null)
-    {
-        return new NpgsqlCommand(sqlString, _connection, _transaction);
-    }
+    public string ConnectionString { get; } = connectionString;
 
     private List<string> GetAppliedSchemas()
     {
-        EnsureOpen();
+        using NpgsqlConnection connection = new(ConnectionString);
+        connection.Open();
 
-        NpgsqlCommand schemasRan = Command("SELECT to_regclass('public.applied_schemas') IS NOT NULL");
+        NpgsqlCommand schemasRan = new("SELECT to_regclass('public.applied_schemas') IS NOT NULL", connection);
         if (!(bool) schemasRan.ExecuteScalar()!)
         {
             return [];
         }
 
         List<string> appliedSchemas = [];
-        NpgsqlCommand schemasFilenames = Command("SELECT filename from applied_schemas");
+        NpgsqlCommand schemasFilenames = new("SELECT filename from applied_schemas", connection);
         NpgsqlDataReader reader = schemasFilenames.ExecuteReader();
         while (reader.Read())
         {
@@ -43,43 +29,42 @@ public class Database(string connectionString)
         return appliedSchemas;
     }
 
-    private string?[] GetSchemaFiles()
+    private string[] GetSchemaFiles()
     {
-        EnsureOpen();
-
-        string?[] schemaFiles = Directory.GetFiles(_schemasFolder, "*.sql", SearchOption.AllDirectories);
-        return schemaFiles;
+        return Directory.GetFiles(_schemasFolder, "*.sql", SearchOption.AllDirectories)
+            .OrderBy(path => Path.GetFileName(path), StringComparer.Ordinal)
+            .ToArray()
+        ;
     }
 
     public void ApplyMissingSchemas()
-    {
-        EnsureOpen();
+    {       
+        using NpgsqlConnection connection = new(ConnectionString);
+        connection.Open();
 
-        NpgsqlCommand createAppliedSchemasLog = Command(
+        NpgsqlCommand createAppliedSchemasLog = new(
             @"
             CREATE TABLE IF NOT EXISTS applied_schemas(
                 filename text PRIMARY KEY
             )
-            "
+            ", connection
         );
         createAppliedSchemasLog.ExecuteNonQuery();
 
         List<string> appliedSchemas = GetAppliedSchemas();
-
-        using NpgsqlTransaction transaction = _connection.BeginTransaction();
-        foreach (string? path in GetSchemaFiles())
+        
+        foreach (string path in GetSchemaFiles())
         {
-            string? file = Path.GetFileName(path);
+            string file = Path.GetFileName(path);
+            if (appliedSchemas.Contains(file)) continue;
 
+            using NpgsqlTransaction transaction = connection.BeginTransaction();
             try 
             {
-                if (file == null || path == null) continue;
-                if (appliedSchemas.Contains(file)) continue;
-
-                NpgsqlCommand schemaRun = Command(File.ReadAllText(path), transaction);
+                NpgsqlCommand schemaRun = new(File.ReadAllText(path), connection, transaction);
                 schemaRun.ExecuteNonQuery();
 
-                NpgsqlCommand logSchema = Command("INSERT INTO applied_schemas (filename) VALUES (@f)", transaction);
+                NpgsqlCommand logSchema = new("INSERT INTO applied_schemas (filename) VALUES (@f)", connection, transaction);
                 logSchema.Parameters.AddWithValue("f", file);
                 logSchema.ExecuteNonQuery();
 

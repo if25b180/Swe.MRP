@@ -1,12 +1,12 @@
 CREATE TABLE ratings (
-    id SERIAL PRIMARY KEY,
+    rating_id SERIAL PRIMARY KEY,
 
     fk_user_id INTEGER NOT NULL
-        REFERENCES users (id)
+        REFERENCES users (user_id)
         ON DELETE CASCADE,
 
     fk_media_entry_id INTEGER NOT NULL
-        REFERENCES media_entries (id)
+        REFERENCES media_entries (media_entry_id)
         ON DELETE CASCADE,
 
     stars INTEGER NOT NULL

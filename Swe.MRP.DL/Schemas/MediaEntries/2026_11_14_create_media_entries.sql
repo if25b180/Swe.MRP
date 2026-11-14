@@ -2,7 +2,7 @@ CREATE TYPE media_entry_type
     AS ENUM ('game', 'movie', 'series'); -- maps to MediaEntry.cs->enum MediaEntryType
 
 CREATE TABLE media_entries (
-    id SERIAL PRIMARY KEY,
+    media_entry_id SERIAL PRIMARY KEY,
 
     media_type media_entry_type NOT NULL
         DEFAULT 'game',

@@ -429,3 +429,6 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# VS Code C# Dev Tools - Auto-generated runners
+.vscodecsdt/Runners/

@@ -1,7 +1,0 @@
-{
-    "files.exclude": {
-        "**/bin": true,
-        "**/obj": true
-    },
-    "csharp-dev-tools.build.configuration": "Debug"
-}

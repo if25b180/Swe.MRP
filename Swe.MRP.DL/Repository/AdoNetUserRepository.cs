@@ -13,7 +13,7 @@ public class AdoNetUserRepository(Database database) : IUserRepository
 {
     private readonly Database _database = database;
 
-    private string AuthToken(User user)
+    private static string AuthToken(User user)
     {
         // Should never be exposed (including being checked in to a git project)
         // I guess for this student project its fine to have this value exposed...
@@ -38,12 +38,13 @@ public class AdoNetUserRepository(Database database) : IUserRepository
 
     public void Register(User user)
     {
-        _database.EnsureOpen();
-
-        NpgsqlCommand register = _database.Command(@"
+        using NpgsqlConnection connection = new(_database.ConnectionString);
+        connection.Open();
+        
+        using NpgsqlCommand register = new(@"
             INSERT INTO users (username, password)
             VALUES (@u, @p);
-        ");
+        ", connection);
 
         register.Parameters.AddWithValue("u", user.Name);
         register.Parameters.AddWithValue("p", user.Password);
@@ -55,9 +56,10 @@ public class AdoNetUserRepository(Database database) : IUserRepository
     // Returns login token or null (if login unsuccessful)
     public string? Login(User user)
     {
-        _database.EnsureOpen();
-
-        using NpgsqlCommand login = _database.Command(@"
+        using NpgsqlConnection connection = new(_database.ConnectionString);
+        connection.Open();
+        
+        using NpgsqlCommand login = new(@"
             SELECT password FROM users WHERE username = @u
         ");
 
