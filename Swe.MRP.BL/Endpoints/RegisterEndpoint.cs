@@ -4,7 +4,7 @@ using Swe.MRP.BL.Abstractions.Api;
 using Swe.MRP.BL.Abstractions.Repository;
 using Swe.MRP.BL.Model;
 
-namespace Swe.MRP.BL.Api.Endpoints;
+namespace Swe.MRP.BL.Endpoints;
 
 public class RegisterEndpoint(IServiceProvider services) : IApiEndpoint
 {

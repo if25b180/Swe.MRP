@@ -57,7 +57,7 @@ public class AdoNetUserRepository(Database database) : IUserRepository
         
         using NpgsqlCommand login = new(@"
             SELECT password FROM users WHERE username = @u
-        ");
+        ", connection);
 
         login.Parameters.AddWithValue("u", user.Name);
         

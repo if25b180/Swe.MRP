@@ -4,7 +4,7 @@ using Swe.MRP.BL.Abstractions.Api;
 using Swe.MRP.BL.Abstractions.Repository;
 using Swe.MRP.BL.Model;
 
-namespace Swe.MRP.BL.Api.Endpoints;
+namespace Swe.MRP.BL.Endpoints;
 
 public class LoginEndpoint(IServiceProvider services) : IApiEndpoint
 {
@@ -18,9 +18,8 @@ public class LoginEndpoint(IServiceProvider services) : IApiEndpoint
     {
         Console.WriteLine("LoginEndpoint.Behaviour() wurde aufgerufen.");
 
-        // Null surpressing here may be a bit smelly...
-        string username = post.GetProperty("username").GetString()!;
-        string password = post.GetProperty("password").GetString()!;
+        string username = post.GetProperty("username").ToString();
+        string password = post.GetProperty("password").ToString();
 
         User user = new()
         {

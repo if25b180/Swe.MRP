@@ -1,4 +1,4 @@
-namespace Swe.MRP.BL.Api.Endpoints;
+namespace Swe.MRP.BL.Endpoints;
 
 public class MediaEntryDelete
 {

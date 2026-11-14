@@ -47,8 +47,10 @@ internal static class Program
 
         services.AddSingleton<IApiEndpoint, RegisterEndpoint>();
         services.AddSingleton<IApiEndpoint, LoginEndpoint>();
+        services.AddSingleton<IApiEndpoint, MediaEntryCreate>();
 
-        services.AddScoped<IUserRepository, AdoNetUserRepository>();
+        services.AddSingleton<IUserRepository, AdoNetUserRepository>();
+        services.AddSingleton<IMediaEntryRepository, AdoNetMediaEntryRepository>();
 
         ServiceProvider provider = services.BuildServiceProvider();
         return provider;
