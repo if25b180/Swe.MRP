@@ -31,7 +31,7 @@ public class RegisterEndpoint(IServiceProvider services) : IApiEndpoint
             Password = password
         };
 
-        IUserRepository userRepo = services.GetRequiredService<IUserRepository>();
+        IUserRepository userRepo = Services.GetRequiredService<IUserRepository>();
         userRepo.Register(user);
     }
 }
