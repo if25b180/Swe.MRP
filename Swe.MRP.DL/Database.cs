@@ -1,16 +1,23 @@
 ﻿namespace Swe.MRP.DL;
 
 using Npgsql;
+using Swe.MRP.BL.Model;
 
-public class Database(string connectionString)
+public class Database
 {
     private readonly string _schemasFolder = Path.Combine(AppContext.BaseDirectory, "Schemas");
-    public string ConnectionString { get; } = connectionString;
+    public NpgsqlDataSource DataSource { get; }
+
+    public Database(string connectionString)
+    {
+        NpgsqlDataSourceBuilder builder = new(connectionString);
+        builder.MapEnum<MediaEntryType>("media_entry_type");
+        DataSource = builder.Build();
+    }
 
     private List<string> GetAppliedSchemas()
     {
-        using NpgsqlConnection connection = new(ConnectionString);
-        connection.Open();
+        using NpgsqlConnection connection = DataSource.OpenConnection();
 
         NpgsqlCommand schemasRan = new("SELECT to_regclass('public.applied_schemas') IS NOT NULL", connection);
         if (!(bool) schemasRan.ExecuteScalar()!)
@@ -39,8 +46,7 @@ public class Database(string connectionString)
 
     public void ApplyMissingSchemas()
     {       
-        using NpgsqlConnection connection = new(ConnectionString);
-        connection.Open();
+        using NpgsqlConnection connection = DataSource.OpenConnection();
 
         NpgsqlCommand createAppliedSchemasLog = new(
             @"
@@ -69,6 +75,7 @@ public class Database(string connectionString)
                 logSchema.ExecuteNonQuery();
 
                 transaction.Commit();
+                connection.ReloadTypes(); // helps if any custom types were defined e. g. 'media_entry_type'
                 Console.WriteLine($"Schema {file} wurde ausgeführt.");
             } catch
             {

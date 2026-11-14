@@ -11,8 +11,6 @@ namespace Swe.MRP.DL.Repository;
 
 public class AdoNetUserRepository(Database database) : IUserRepository
 {
-    private readonly Database _database = database;
-
     private static string AuthToken(User user)
     {
         // Should never be exposed (including being checked in to a git project)
@@ -38,7 +36,7 @@ public class AdoNetUserRepository(Database database) : IUserRepository
 
     public void Register(User user)
     {
-        using NpgsqlConnection connection = new(_database.ConnectionString);
+        using NpgsqlConnection connection = database.DataSource.OpenConnection();
         connection.Open();
         
         using NpgsqlCommand register = new(@"
@@ -56,7 +54,7 @@ public class AdoNetUserRepository(Database database) : IUserRepository
     // Returns login token or null (if login unsuccessful)
     public string? Login(User user)
     {
-        using NpgsqlConnection connection = new(_database.ConnectionString);
+        using NpgsqlConnection connection = database.DataSource.OpenConnection();
         connection.Open();
         
         using NpgsqlCommand login = new(@"

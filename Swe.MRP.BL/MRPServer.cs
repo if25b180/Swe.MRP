@@ -35,36 +35,52 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
         }
     }
 
+    private static void ParametersAppendGet(HttpListenerRequest request, Dictionary<string, string> parameters)
+    {
+        foreach (string? key in request.QueryString.AllKeys)
+        {
+            if (key == null) continue;
+            parameters.Add(key, request.QueryString[key] ?? "");
+        }
+    }
+
+    private static void ParametersAppendPost(HttpListenerRequest request, Dictionary<string, string> parameters)
+    {
+        string body = "";
+        if (request.HasEntityBody)
+        {
+            using StreamReader reader = new(request.InputStream, request.ContentEncoding);
+            body = reader.ReadToEnd();
+        }
+        
+        if (!string.IsNullOrWhiteSpace(body))
+        {
+            try
+            {
+                Dictionary<string, JsonElement>? bodyDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(body);
+                if (bodyDict != null)
+                {
+                    foreach (KeyValuePair<string, JsonElement> entry in bodyDict)
+                    {
+                        parameters.TryAdd(entry.Key, entry.Value.ToString());
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                Console.WriteLine("WARN: Client hat invalides Body gesendet");
+            }
+        }
+    }
+
     private async Task HandleResponse(HttpListenerContext context)
     {
         HttpListenerResponse response = context.Response;
         HttpListenerRequest request = context.Request;
 
         Dictionary<string, string> parameters = [];
-        foreach (string? key in request.QueryString.AllKeys)
-        {
-            if (key == null) continue;
-            parameters.Add(key, request.QueryString[key] ?? "");
-        }
-
-        string body = "";
-        if (request.HasEntityBody)
-        {
-            using StreamReader reader = new(request.InputStream, request.ContentEncoding);
-            body = await reader.ReadToEndAsync();
-        }
-        
-        if (!string.IsNullOrWhiteSpace(body))
-        {
-            Dictionary<string, JsonElement>? bodyDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(body);
-            if (bodyDict != null)
-            {
-                foreach (KeyValuePair<string, JsonElement> entry in bodyDict)
-                {
-                    parameters.TryAdd(entry.Key, entry.Value.ToString());
-                }
-            }
-        }
+        ParametersAppendGet(request, parameters);
+        ParametersAppendPost(request, parameters);
             
         string apiRequest = request.Url!.LocalPath;
         _endpointHandler.Call(apiRequest, parameters);
