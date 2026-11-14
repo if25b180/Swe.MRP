@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Swe.MRP.BL.Abstractions.Api;
 using Swe.MRP.BL.Abstractions.Repository;
@@ -12,12 +13,12 @@ public class RegisterEndpoint(IServiceProvider services) : IApiEndpoint
     int IApiEndpoint.Version => 1;
     string IApiEndpoint.EndpointName => "/users/register";
 
-    public void Behaviour(Dictionary<string, string> args)
+    public void Behaviour(JsonElement get, JsonElement post)
     {
         Console.WriteLine("RegisterEndpoint.Behaviour() wurde aufgerufen.");
 
-        args.TryGetValue("username", out string? username);
-        args.TryGetValue("password", out string? password);
+        string? username = post.GetProperty("username").GetString()!;
+        string? password = post.GetProperty("password").GetString()!;
         
         if (username == null || password == null)
         {

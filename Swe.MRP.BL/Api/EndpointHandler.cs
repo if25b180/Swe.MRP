@@ -19,7 +19,7 @@ public class EndpointHandler
         }
     }
 
-    public void Call(string endpointPath, Dictionary<string, string> args)
+    public void Call(string endpointPath, JsonElement get, JsonElement post)
     {
         Console.WriteLine(endpointPath);
 
@@ -35,6 +35,6 @@ public class EndpointHandler
             return;
         }
 
-        endpoint?.Behaviour(args);
+        endpoint?.Behaviour(get, post);
     }
 }

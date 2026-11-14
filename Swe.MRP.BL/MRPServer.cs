@@ -35,16 +35,20 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
         }
     }
 
-    private static void ParametersAppendGet(HttpListenerRequest request, Dictionary<string, string> parameters)
+    private static JsonElement ParametersGet(HttpListenerRequest request)
     {
+        Dictionary<string, string> parameters = [];
+
         foreach (string? key in request.QueryString.AllKeys)
         {
             if (key == null) continue;
-            parameters.Add(key, request.QueryString[key] ?? "");
+            parameters[key] = request.QueryString[key] ?? "";
         }
+
+        return JsonSerializer.SerializeToElement(parameters);
     }
 
-    private static void ParametersAppendPost(HttpListenerRequest request, Dictionary<string, string> parameters)
+    private static JsonElement ParametersPost(HttpListenerRequest request)
     {
         string body = "";
         if (request.HasEntityBody)
@@ -52,24 +56,19 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
             using StreamReader reader = new(request.InputStream, request.ContentEncoding);
             body = reader.ReadToEnd();
         }
-        
-        if (!string.IsNullOrWhiteSpace(body))
+
+        if (string.IsNullOrWhiteSpace(body))
+            return JsonSerializer.SerializeToElement(new { });
+
+        try
         {
-            try
-            {
-                Dictionary<string, JsonElement>? bodyDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(body);
-                if (bodyDict != null)
-                {
-                    foreach (KeyValuePair<string, JsonElement> entry in bodyDict)
-                    {
-                        parameters.TryAdd(entry.Key, entry.Value.ToString());
-                    }
-                }
-            }
-            catch (JsonException)
-            {
-                Console.WriteLine("WARN: Client hat invalides Body gesendet");
-            }
+            using JsonDocument doc = JsonDocument.Parse(body);
+            return doc.RootElement.Clone(); // Clone, because doc is disposed at the end of the method
+        }
+        catch (JsonException)
+        {
+            Console.WriteLine("WARN: Client hat invalides Body gesendet");
+            return JsonSerializer.SerializeToElement(new { });
         }
     }
 
@@ -77,19 +76,14 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
     {
         HttpListenerResponse response = context.Response;
         HttpListenerRequest request = context.Request;
-
-        Dictionary<string, string> parameters = [];
-        ParametersAppendGet(request, parameters);
-        ParametersAppendPost(request, parameters);
-            
+        
         string apiRequest = request.Url!.LocalPath;
-        _endpointHandler.Call(apiRequest, parameters);
+        JsonElement get = ParametersGet(request);
+        JsonElement post = ParametersPost(request);
+        _endpointHandler.Call(apiRequest, get, post);
 
-        string responseString = "";
-        foreach (KeyValuePair<string, string> entry in parameters)
-        {
-            responseString += $"<p>{entry.Key}: {entry.Value}</p>";
-        }
+        // Debug vomit
+        string responseString = $"<p>Post</p><pre>{post}</pre><p>Get</p><pre>{get}</pre>";
         Console.WriteLine(responseString);
 
         byte[] responseBuffer = Encoding.Latin1.GetBytes(responseString); // Latin1 for german

@@ -37,7 +37,6 @@ public class AdoNetUserRepository(Database database) : IUserRepository
     public void Register(User user)
     {
         using NpgsqlConnection connection = database.DataSource.OpenConnection();
-        connection.Open();
         
         using NpgsqlCommand register = new(@"
             INSERT INTO users (username, password)
@@ -55,7 +54,6 @@ public class AdoNetUserRepository(Database database) : IUserRepository
     public string? Login(User user)
     {
         using NpgsqlConnection connection = database.DataSource.OpenConnection();
-        connection.Open();
         
         using NpgsqlCommand login = new(@"
             SELECT password FROM users WHERE username = @u

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Swe.MRP.BL.Abstractions.Api;
 using Swe.MRP.BL.Abstractions.Repository;
@@ -13,18 +14,13 @@ public class LoginEndpoint(IServiceProvider services) : IApiEndpoint
 
     public IServiceProvider Services => services;
 
-    public void Behaviour(Dictionary<string, string> args)
+    public void Behaviour(JsonElement get, JsonElement post)
     {
         Console.WriteLine("LoginEndpoint.Behaviour() wurde aufgerufen.");
 
-        args.TryGetValue("username", out string? username);
-        args.TryGetValue("password", out string? password);
-        
-        if (username == null || password == null)
-        {
-            Console.WriteLine("WARN: LoginEndpoint->Behaviour() called but no username/password passed.");
-            return;
-        }
+        // Null surpressing here may be a bit smelly...
+        string username = post.GetProperty("username").GetString()!;
+        string password = post.GetProperty("password").GetString()!;
 
         User user = new()
         {
