@@ -6,20 +6,20 @@ namespace Swe.MRP.BL;
 
 public class EndpointHandler
 {
-    private readonly Dictionary<string, IApiEndpoint> _endpoints = [];
+    public Dictionary<string, IApiEndpoint> Endpoints { get; } = [];
 
     public EndpointHandler(IServiceProvider provider)
     {   
         foreach (IApiEndpoint endpoint in provider.GetServices<IApiEndpoint>())
         {
             // We omit version for now, since the provided spec files do not expect it
-            //_endpoints[$"/api/v{endpoint.Version}{endpoint.EndpointName}"] = endpoint;
+            //Endpoints[$"/api/v{endpoint.Version}{endpoint.EndpointName}"] = endpoint;
 
-            _endpoints[$"/api{endpoint.EndpointName}"] = endpoint;
+            Endpoints[$"{endpoint.EndpointMethod} /api{endpoint.EndpointName}"] = endpoint;
         }
     }
 
-    public void Call(string endpointPath, JsonElement get, JsonElement post)
+    public void Call(string endpointPath, JsonElement urlParams, JsonElement bodyParams)
     {
         Console.WriteLine(endpointPath);
 
@@ -29,12 +29,12 @@ public class EndpointHandler
             return;
         }
 
-        if (!_endpoints.TryGetValue(endpointPath, out IApiEndpoint? endpoint))
+        if (!Endpoints.TryGetValue(endpointPath, out IApiEndpoint? endpoint))
         {
             Console.WriteLine($"Endpoint {endpointPath} existiert nicht");
             return;
         }
 
-        endpoint?.Behaviour(get, post);
+        endpoint?.Behaviour(urlParams, bodyParams);
     }
 }

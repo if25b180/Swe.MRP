@@ -8,5 +8,6 @@ public interface IApiEndpoint
     IServiceProvider Services { get; }
     int Version { get; }
     string EndpointName { get; }
-    void Behaviour(JsonElement get, JsonElement post);
+    string EndpointMethod { get; }
+    void Behaviour(JsonElement urlParams, JsonElement bodyParams);
 }

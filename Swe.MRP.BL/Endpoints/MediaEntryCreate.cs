@@ -14,7 +14,10 @@ public class MediaEntryCreate(IServiceProvider services) : IApiEndpoint
 
     public string EndpointName => "/media";
 
-    public void Behaviour(JsonElement get, JsonElement post)
+
+    public string EndpointMethod => "POST";
+
+    public void Behaviour(JsonElement urlParams, JsonElement post)
     {
         string title = post.GetProperty("title").ToString();
         string description = post.GetProperty("description").ToString();

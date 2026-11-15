@@ -10,10 +10,12 @@ public class RegisterEndpoint(IServiceProvider services) : IApiEndpoint
 {
     public IServiceProvider Services => services;
 
-    int IApiEndpoint.Version => 1;
-    string IApiEndpoint.EndpointName => "/users/register";
+    public int Version => 1;
+    public string EndpointName => "/users/register";
 
-    public void Behaviour(JsonElement get, JsonElement post)
+    public string EndpointMethod => "POST";
+
+    public void Behaviour(JsonElement urlParams, JsonElement post)
     {
         Console.WriteLine("RegisterEndpoint.Behaviour() wurde aufgerufen.");
 

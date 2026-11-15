@@ -14,6 +14,8 @@ public class LoginEndpoint(IServiceProvider services) : IApiEndpoint
 
     public IServiceProvider Services => services;
 
+    public string EndpointMethod => "POST";
+
     public void Behaviour(JsonElement get, JsonElement post)
     {
         Console.WriteLine("LoginEndpoint.Behaviour() wurde aufgerufen.");
@@ -29,6 +31,9 @@ public class LoginEndpoint(IServiceProvider services) : IApiEndpoint
 
         IUserRepository userRepo = Services.GetRequiredService<IUserRepository>();
         string? token = userRepo.Login(user);
-        Console.WriteLine($"Dein Token: {token}");
+        if (token != null)
+            Console.WriteLine($"Dein Token: {token}");
+        else
+            Console.WriteLine("Falscher/s Benutzernahme oder Passwort");
     }
 }

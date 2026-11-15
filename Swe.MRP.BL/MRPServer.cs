@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Swe.MRP.BL;
+using Swe.MRP.BL.Abstractions.Api;
 
 namespace Swe.MRP.BL;
 
@@ -35,7 +36,7 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
         }
     }
 
-    private static JsonElement ParametersGet(HttpListenerRequest request)
+    private static JsonElement ParametersUrl(HttpListenerRequest request, Dictionary<string, string>? additional = null)
     {
         Dictionary<string, string> parameters = [];
 
@@ -45,10 +46,18 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
             parameters[key] = request.QueryString[key] ?? "";
         }
 
+        if (additional != null)
+        {
+            foreach (KeyValuePair<string, string> pair in additional)
+            {
+                parameters[pair.Key] = pair.Value;
+            }
+        }
+
         return JsonSerializer.SerializeToElement(parameters);
     }
 
-    private static JsonElement ParametersPost(HttpListenerRequest request)
+    private static JsonElement ParametersBody(HttpListenerRequest request)
     {
         string body = "";
         if (request.HasEntityBody)
@@ -72,18 +81,67 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
         }
     }
 
+    private string? MatchedEndpoint(string requestRaw, out Dictionary<string, string> variables)
+    {
+        // A request like /media/1 is matched against endpoints like /media/{mediaId}
+        string? bestKey = null;
+        Dictionary<string, string> bestVariables = [];
+    
+        foreach (KeyValuePair<string, IApiEndpoint> endpoint in _endpointHandler.Endpoints)
+        {
+            Dictionary<string, string> foundVariables = [];
+            
+            // potentially very slow...
+            string[] requestRawSplit = requestRaw.Trim('/').Split('/');
+            string[] endpointSplit = endpoint.Key.Trim('/').Split('/');
+
+            // No bother in checking because they arent even the same length
+            if (endpointSplit.Length != requestRawSplit.Length) continue;
+
+            for (int i = 0; i < endpointSplit.Length; i++)
+            {
+                string part = endpointSplit[i];
+                if (!(part.StartsWith('{') && part.EndsWith('}'))) continue;
+
+                // "{mediaId}" -> "mediaId"
+                string name = part[1..^1];
+                foundVariables[name] = requestRawSplit[i];
+
+                // swap the value for the placeholder so the strings can match
+                requestRawSplit[i] = part;
+            }
+
+            if (endpoint.Key.Trim('/') != string.Join("/", requestRawSplit)) continue;
+
+            // Prefer the route with the fewest variables (/media/search over /media/{mediaId})
+            // I don't think its required anywhere in the API spec but better safe than sorry
+            if (bestKey == null || foundVariables.Count < bestVariables.Count)
+            {
+                bestKey = endpoint.Key;
+                bestVariables = foundVariables;
+            }
+        }
+
+        variables = bestVariables;
+        return bestKey;
+    }
+
     private async Task HandleResponse(HttpListenerContext context)
     {
         HttpListenerResponse response = context.Response;
         HttpListenerRequest request = context.Request;
-        
-        string apiRequest = request.Url!.LocalPath;
-        JsonElement get = ParametersGet(request);
-        JsonElement post = ParametersPost(request);
-        _endpointHandler.Call(apiRequest, get, post);
 
-        // Debug vomit
-        string responseString = $"<p>Post</p><pre>{post}</pre><p>Get</p><pre>{get}</pre>";
+        string endpointPath = $"{request.HttpMethod} {request.Url!.LocalPath}";
+        string? apiRequest = MatchedEndpoint(endpointPath, out Dictionary<string, string> endpointVariables);
+        JsonElement url = ParametersUrl(request, endpointVariables);
+        JsonElement body = ParametersBody(request);
+
+        string responseString = $"<p>Post</p><pre>{body}</pre><p>Get</p><pre>{url}</pre>";
+        if (apiRequest != null)
+            _endpointHandler.Call(apiRequest, url, body);
+        else
+            responseString = "endpoint not found";
+        
         Console.WriteLine(responseString);
 
         byte[] responseBuffer = Encoding.Latin1.GetBytes(responseString); // Latin1 for german
