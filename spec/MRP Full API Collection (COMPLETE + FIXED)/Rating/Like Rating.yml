@@ -1,0 +1,16 @@
+info:
+  name: Like Rating
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:8080/api/ratings/1/like
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

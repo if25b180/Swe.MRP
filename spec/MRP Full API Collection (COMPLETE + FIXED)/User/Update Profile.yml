@@ -1,0 +1,26 @@
+info:
+  name: Update Profile
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: http://localhost:8080/api/users/1/profile
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "email": "user1@example.com",
+        "favoriteGenre": "sci-fi"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

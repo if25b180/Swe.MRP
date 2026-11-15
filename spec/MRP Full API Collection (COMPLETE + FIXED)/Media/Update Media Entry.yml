@@ -1,0 +1,33 @@
+info:
+  name: Update Media Entry
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: http://localhost:8080/api/media/1
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Inception killed bro",
+        "description": "Updated description",
+        "mediaType": "movie",
+        "releaseYear": 2010,
+        "genres": [
+          "sci-fi",
+          "action"
+        ],
+        "ageRestriction": 16
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -3,8 +3,8 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
-# I personally use bruno but that can be generated from the MRP_Postman_Collection
-spec/MRP Full API Collection (COMPLETE + FIXED)
+# Libreoffice lock files
+.~lock*
 
 # User-specific files
 *.rsuser

@@ -1,0 +1,33 @@
+info:
+  name: Create Media Entry
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:8080/api/media
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Inception",
+        "description": "Sci-fi thriller",
+        "mediaType": "movie",
+        "releaseYear": 2010,
+        "genres": [
+          "sci-fi",
+          "thriller"
+        ],
+        "ageRestriction": 12
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
