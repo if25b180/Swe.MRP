@@ -12,13 +12,11 @@ public class LoginEndpoint(IServiceProvider services) : IApiEndpoint
 
     public string EndpointName => "/users/login";
 
-    public IServiceProvider Services => services;
-
     public string EndpointMethod => "POST";
 
-    public void Behaviour(JsonElement get, JsonElement post)
+    public string Behaviour(JsonElement get, JsonElement post)
     {
-        Console.WriteLine("LoginEndpoint.Behaviour() wurde aufgerufen.");
+        string response = "LoginEndpoint.Behaviour() wurde aufgerufen.\n";
 
         string username = post.GetProperty("username").ToString();
         string password = post.GetProperty("password").ToString();
@@ -29,11 +27,13 @@ public class LoginEndpoint(IServiceProvider services) : IApiEndpoint
             Password = password
         };
 
-        IUserRepository userRepo = Services.GetRequiredService<IUserRepository>();
+        IUserRepository userRepo = services.GetRequiredService<IUserRepository>();
         string? token = userRepo.Login(user);
         if (token != null)
-            Console.WriteLine($"Dein Token: {token}");
+            response += $"Dein Token: {token}";
         else
-            Console.WriteLine("Falscher/s Benutzernahme oder Passwort");
+            response += "Falscher/s Benutzernahme oder Passwort";
+
+        return response;
     }
 }

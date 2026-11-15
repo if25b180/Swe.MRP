@@ -8,8 +8,6 @@ namespace Swe.MRP.BL.Endpoints;
 
 public class MediaEntryCreate(IServiceProvider services) : IApiEndpoint
 {
-    public IServiceProvider Services => services;
-
     public int Version => 1;
 
     public string EndpointName => "/media";
@@ -17,7 +15,7 @@ public class MediaEntryCreate(IServiceProvider services) : IApiEndpoint
 
     public string EndpointMethod => "POST";
 
-    public void Behaviour(JsonElement urlParams, JsonElement post)
+    public string Behaviour(JsonElement urlParams, JsonElement post)
     {
         string title = post.GetProperty("title").ToString();
         string description = post.GetProperty("description").ToString();
@@ -46,7 +44,11 @@ public class MediaEntryCreate(IServiceProvider services) : IApiEndpoint
             Genres = genres
         };
 
-        IMediaEntryRepository mediaRepo = Services.GetRequiredService<IMediaEntryRepository>();
-        mediaRepo.Create(mediaEntry);
+        IMediaEntryRepository mediaRepo = services.GetRequiredService<IMediaEntryRepository>();
+        int mediaId = mediaRepo.Create(mediaEntry);
+
+        return mediaId != -1 ?
+            $"MediaEntry erstellt. Mit der Id = {mediaId}"
+            : "MediaEntry konnte nicht erstellt werden. Siehe Konsole für mehr.";
     }
 }

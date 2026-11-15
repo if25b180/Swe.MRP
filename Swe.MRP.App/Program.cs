@@ -47,6 +47,9 @@ internal static class Program
         services.AddSingleton<IApiEndpoint, RegisterEndpoint>();
         services.AddSingleton<IApiEndpoint, LoginEndpoint>();
         services.AddSingleton<IApiEndpoint, MediaEntryCreate>();
+        services.AddSingleton<IApiEndpoint, MediaEntryDelete>();
+        services.AddSingleton<IApiEndpoint, MediaEntryGetById>();
+        services.AddSingleton<IApiEndpoint, MediaEntryUpdate>();
 
         services.AddSingleton<IUserRepository, AdoNetUserRepository>();
         services.AddSingleton<IMediaEntryRepository, AdoNetMediaEntryRepository>();

@@ -8,25 +8,18 @@ namespace Swe.MRP.BL.Endpoints;
 
 public class RegisterEndpoint(IServiceProvider services) : IApiEndpoint
 {
-    public IServiceProvider Services => services;
-
     public int Version => 1;
     public string EndpointName => "/users/register";
 
     public string EndpointMethod => "POST";
 
-    public void Behaviour(JsonElement urlParams, JsonElement post)
+    public string Behaviour(JsonElement urlParams, JsonElement post)
     {
-        Console.WriteLine("RegisterEndpoint.Behaviour() wurde aufgerufen.");
-
         string? username = post.GetProperty("username").GetString()!;
         string? password = post.GetProperty("password").GetString()!;
         
         if (username == null || password == null)
-        {
-            Console.WriteLine("WARN: RegisterEndpoint->Behaviour() called but no username/password passed.");
-            return;
-        }
+            return "WARN: RegisterEndpoint->Behaviour() called but no username/password passed.";
 
         User user = new()
         {
@@ -34,7 +27,9 @@ public class RegisterEndpoint(IServiceProvider services) : IApiEndpoint
             Password = password
         };
 
-        IUserRepository userRepo = Services.GetRequiredService<IUserRepository>();
+        IUserRepository userRepo = services.GetRequiredService<IUserRepository>();
         userRepo.Register(user);
+
+        return "RegisterEndpoint.Behaviour() wurde aufgerufen.";
     }
 }

@@ -31,7 +31,7 @@ public class AdoNetMediaEntryRepository(Database database) : IMediaEntryReposito
         }
     }
 
-    public void Create(MediaEntry media)
+    public int Create(MediaEntry media)
     {
         using NpgsqlConnection connection = database.DataSource.OpenConnection();
         using NpgsqlTransaction transaction = connection.BeginTransaction();
@@ -50,19 +50,29 @@ public class AdoNetMediaEntryRepository(Database database) : IMediaEntryReposito
         create.Parameters.AddWithValue("y", media.ReleaseYear);
         create.Parameters.AddWithValue("a", media.AgeRestriction);
         
-        int mediaId = (int)create.ExecuteScalar()!;
-        media.Id = mediaId;
+        try
+        {
+            int mediaId = (int)create.ExecuteScalar()!;
+            media.Id = mediaId;
 
-        // Deduplicate genres if needed
-        IEnumerable<string> genres = (media.Genres ?? [])
-            .Where(genre => !string.IsNullOrWhiteSpace(genre))
-            .Distinct()
-            .ToList();
-        
-        LinkGenres(genres, mediaId, connection, transaction);
+            // Deduplicate genres if needed
+            IEnumerable<string> genres = (media.Genres ?? [])
+                .Where(genre => !string.IsNullOrWhiteSpace(genre))
+                .Distinct()
+                .ToList();
+            
+            LinkGenres(genres, mediaId, connection, transaction);
 
-        transaction.Commit();
-        Console.WriteLine($"Media {mediaId} erstellt mit {genres.Count()} Genres");
+            transaction.Commit();
+            Console.WriteLine($"Media {mediaId} erstellt mit {genres.Count()} Genres");
+            return mediaId;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        return -1;
     }
 
     public void Delete(int mediaEntryId)
@@ -79,15 +89,13 @@ public class AdoNetMediaEntryRepository(Database database) : IMediaEntryReposito
         Console.WriteLine($"{affected} rows beeinflusst");
     }
 
-    public MediaEntry? GetById(int mediaId)
+    private static MediaEntry? GetEntryRow(int mediaId, NpgsqlConnection connection)
     {
-        using NpgsqlConnection connection = database.DataSource.OpenConnection();
         using NpgsqlCommand get = new(@"
             SELECT media_entry_id, media_type::text, title, description, release_year, age_restriction
             FROM media_entries
             WHERE media_entry_id = @id;
         ", connection);
-
         get.Parameters.AddWithValue("id", mediaId);
         using NpgsqlDataReader reader = get.ExecuteReader();
 
@@ -102,6 +110,36 @@ public class AdoNetMediaEntryRepository(Database database) : IMediaEntryReposito
             ReleaseYear = reader.GetInt32(4),
             AgeRestriction = reader.GetInt32(5)
         };
+    }
+
+    private static string[] GetGenres(int mediaId, NpgsqlConnection connection)
+    {
+        using NpgsqlCommand getGenres = new(@"
+            SELECT g.name
+            FROM media_genres mg
+            JOIN genres g ON g.genre_id = mg.fk_genre_id
+            WHERE mg.fk_media_entry_id = @id
+            ORDER BY g.name;
+        ", connection);
+        getGenres.Parameters.AddWithValue("id", mediaId);
+
+        List<string> genres = [];
+        using NpgsqlDataReader reader = getGenres.ExecuteReader();
+        while (reader.Read()) genres.Add(reader.GetString(0));
+
+        return genres.ToArray();
+    }
+
+    public MediaEntry? GetById(int mediaId)
+    {
+        using NpgsqlConnection connection = database.DataSource.OpenConnection();
+
+        MediaEntry? entry = GetEntryRow(mediaId, connection);
+        if (entry == null) return null;
+
+        entry.Genres = GetGenres(mediaId, connection);
+
+        return entry;
     }
 
     public void Update(int toUpdateId, MediaEntry mediaEdit)
@@ -126,6 +164,7 @@ public class AdoNetMediaEntryRepository(Database database) : IMediaEntryReposito
         update.Parameters.AddWithValue("d", mediaEdit.Description ?? "");
         update.Parameters.AddWithValue("y", mediaEdit.ReleaseYear);
         update.Parameters.AddWithValue("a", mediaEdit.AgeRestriction);
+
         int affected = update.ExecuteNonQuery();
         Console.WriteLine($"{affected} rows beeinflusst");
     }

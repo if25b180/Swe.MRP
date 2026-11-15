@@ -14,4 +14,20 @@ public class MediaEntry
     public int ReleaseYear { get; set; }
     public string[]? Genres { get; set; }
     public int AgeRestriction { get; set; }
+
+    public string GetString()
+    {
+        // Please excuse this ugly formatting; it avoids distracting whitespace 
+        return
+$@"MediaEntry {{
+    Id: `{Id}`,
+    MediaType: `{MediaType}`,
+    Title: `{Title}`,
+    Description: `{Description}`,
+    ReleaseYear: `{ReleaseYear}`,
+    Genres: `{string.Join(", ", Genres ?? [])}`,
+    AgeRestriction: `{AgeRestriction}`
+}}
+";
+    }
 }
