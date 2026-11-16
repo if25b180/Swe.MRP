@@ -8,6 +8,7 @@
 MEDIA_ID=1
 
 # Register User
+echo "_______________REGISTER TEST_________________"
 curl --request POST \
   --url http://localhost:8080/api/users/register \
   --header 'Content-Type: application/json' \
@@ -17,6 +18,7 @@ curl --request POST \
 }'
 
 # Login User
+echo "_______________LOGIN TEST_________________"
 curl --request POST \
   --url http://localhost:8080/api/users/login \
   --header 'Content-Type: application/json' \
@@ -26,11 +28,12 @@ curl --request POST \
 }'
 
 # Create Media Entry
+echo "_______________CREATE MEDIA TEST_________________"
 curl --request POST \
   --url http://localhost:8080/api/media \
   --header 'Content-Type: application/json' \
   --data '{
-  "title": "Inception",
+  "title": "Inception'"$MEDIA_ID"'",
   "description": "Sci-fi thriller",
   "mediaType": "movie",
   "releaseYear": 2010,
@@ -42,11 +45,12 @@ curl --request POST \
 }'
 
 # Update Media Entry
+echo "_______________UPDATE MEDIA TEST_________________"
 curl --request PUT \
   --url http://localhost:8080/api/media/$MEDIA_ID \
   --header 'Content-Type: application/json' \
   --data '{
-  "title": "Inception updated",
+  "title": "Inception'"$MEDIA_ID"' updated",
   "description": "Updated description",
   "mediaType": "movie",
   "releaseYear": 2010,
@@ -58,9 +62,11 @@ curl --request PUT \
 }'
 
 # Get Media by ID
+echo "_______________GET MEDIA TEST_________________"
 curl --request GET \
   --url http://localhost:8080/api/media/$MEDIA_ID
 
 # Delete Media Entry
+echo "_______________DELETE MEDIA TEST_________________"
 curl --request DELETE \
   --url http://localhost:8080/api/media/$MEDIA_ID
