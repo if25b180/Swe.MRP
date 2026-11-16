@@ -98,10 +98,10 @@ public class MRPServer(string httpUrl, ServiceProvider serviceProvider)
                 }}
             </style>
 
-            <p>Post: </p>
+            <p>Body: </p>
             <pre>{body}</pre>
 
-            <p>Get: </p>
+            <p>Url Params: </p>
             <pre>{url}</pre>
         ";
 
