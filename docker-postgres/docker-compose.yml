@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_USER: mrpadmin
+      POSTGRES_PASSWORD: swen2026
+      POSTGRES_DB: mrpdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: mrp@admin.com
+      PGADMIN_DEFAULT_PASSWORD: swen2026
+    volumes:
+      - pgadmin:/root/.pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  pgadmin:
+
+networks:
+  appNetwork:
