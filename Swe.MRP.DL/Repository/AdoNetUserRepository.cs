@@ -40,7 +40,8 @@ public class AdoNetUserRepository(Database database) : IUserRepository
         
         using NpgsqlCommand register = new(@"
             INSERT INTO users (username, password)
-            VALUES (@u, @p);
+            VALUES (@u, @p)
+            ON CONFLICT (username) DO NOTHING;
         ", connection);
 
         register.Parameters.AddWithValue("u", user.Name);
